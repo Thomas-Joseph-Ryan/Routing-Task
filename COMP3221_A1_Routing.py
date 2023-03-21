@@ -3,6 +3,7 @@ import threading
 import socket
 import signal
 import time
+import json
 
 stop_event = threading.Event()
 
@@ -15,26 +16,32 @@ def start():
     node_config_file = sys.argv[3]
 
     # Dictionary to store config values as {letter : {weight: w, port: p}} eg. {"A" : {"weight": 3.1, "port": 6000}} 
-    neighbours = {}
-    config_information = check_config(node_config_file, neighbours)
-    if config_information == False:
+    info_update_packet = check_config(node_config_file)
+    if info_update_packet == False:
         return
+    neighbours = info_update_packet.copy()
 
     # spawn thread for listen function
-    thread = threading.Thread(target=listen, args=(port_no,))
-    thread.start()
+    listen_thread = threading.Thread(target=listen, args=(port_no,))
+    listen_thread.start()
 
-    print("Main thread is still running...")
+    # spawn thread for broadcast function
+
+    # broadcast_thread = threading.Thread(target=)
+
+    # print("Main thread is still running...")
 
     # wait for the thread to finish before continuing
     # thread.join()
     while True:
-        time.sleep(2)
+        time.sleep(10)
+        broadcast(neighbours, info_update_packet)
 
     print("Main thread has finished.")
 
 
-def check_config(filename, neighbours):
+def check_config(filename):
+    neighbours = {}
     with open(filename, 'r') as file:
         # read the first line and extract the number of nodes
         num_nodes = int(file.readline())
@@ -66,7 +73,12 @@ def listen(port):
                 print(f"Listening on port {port}...")
 
                 while not stop_event.is_set():  # loop until stop event is set
-                    conn, addr = s.accept()
+                    s.settimeout(5) # set a timeout of 5 second
+                    try:
+                        conn, addr = s.accept()
+                    except socket.timeout:
+                        continue
+
                     with conn:
                         print(f"Connected by {addr}")
                         while True:
@@ -79,6 +91,25 @@ def listen(port):
             print(f"Exception in listen: {e}")
 
         print("Listen thread has finished.")
+
+def broadcast(neighbours: dict, info_update_packet: dict):
+    packet = json.dumps(info_update_packet)
+    packet_encoded = packet.encode('utf-8')
+    for neighbour in neighbours:
+        port = neighbours.get(neighbour).get("port")
+        port = int(port)
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                # print("trying to connect to " + neighbour + " on port " + str(port))
+                s.connect(('localhost', port))
+                s.sendall(packet_encoded)
+        except Exception as e:
+            pass
+            # print(e)
+            # print("Can't connect to the Socket: " + neighbour)
+
+def update_ib_packet():
+    pass
 
 def quit_gracefully(signum, frame):
     print(f"Received signal {signum}, quitting gracefully...")

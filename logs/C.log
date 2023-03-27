@@ -1,0 +1,82 @@
+2023-03-26 17:24:56,376 - INFO - Listening on port 6002...
+2023-03-26 17:24:56,376 - INFO - trying to connect to B on port 6001
+2023-03-26 17:24:56,376 - INFO - trying to connect to H on port 6006
+2023-03-26 17:24:56,623 - INFO - Connected by ('127.0.0.1', 54027)
+2023-03-26 17:24:56,623 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}}}
+2023-03-26 17:24:58,403 - ERROR - Connection was refused by node H
+2023-03-26 17:25:04,198 - INFO - Connected by ('127.0.0.1', 54043)
+2023-03-26 17:25:04,202 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}}}
+2023-03-26 17:25:08,418 - INFO - trying to connect to B on port 6001
+2023-03-26 17:25:08,418 - INFO - trying to connect to H on port 6006
+2023-03-26 17:25:10,707 - INFO - Connected by ('127.0.0.1', 54063)
+2023-03-26 17:25:10,707 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "A", "cost": 6.300000000000001}, "J": {"dir": "A", "cost": 9.223372036854776e+18}}}
+2023-03-26 17:25:14,219 - INFO - Connected by ('127.0.0.1', 54075)
+2023-03-26 17:25:14,219 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "B", "cost": 8.3}, "J": {"dir": "A", "cost": 9.223372036854776e+18}}}
+2023-03-26 17:25:18,424 - INFO - trying to connect to B on port 6001
+2023-03-26 17:25:18,427 - INFO - trying to connect to H on port 6006
+2023-03-26 17:25:20,718 - INFO - Connected by ('127.0.0.1', 54095)
+2023-03-26 17:25:20,718 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 8.7}, "D": {"dir": "H", "cost": 7.1}, "I": {"dir": "J", "cost": 7.1}}}
+2023-03-26 17:25:24,243 - INFO - Connected by ('127.0.0.1', 54105)
+2023-03-26 17:25:24,243 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:25:28,436 - INFO - trying to connect to B on port 6001
+2023-03-26 17:25:28,440 - INFO - trying to connect to H on port 6006
+2023-03-26 17:25:30,730 - INFO - Connected by ('127.0.0.1', 54127)
+2023-03-26 17:25:30,730 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:25:34,264 - INFO - Connected by ('127.0.0.1', 54137)
+2023-03-26 17:25:34,264 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:25:38,445 - INFO - trying to connect to B on port 6001
+2023-03-26 17:25:38,445 - INFO - trying to connect to H on port 6006
+2023-03-26 17:25:40,735 - INFO - Connected by ('127.0.0.1', 54159)
+2023-03-26 17:25:40,739 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:25:44,284 - INFO - Connected by ('127.0.0.1', 54169)
+2023-03-26 17:25:44,284 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:25:48,449 - INFO - trying to connect to B on port 6001
+2023-03-26 17:25:48,452 - INFO - trying to connect to H on port 6006
+2023-03-26 17:25:50,746 - INFO - Connected by ('127.0.0.1', 54189)
+2023-03-26 17:25:50,746 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:25:54,310 - INFO - Connected by ('127.0.0.1', 54199)
+2023-03-26 17:25:54,310 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:25:58,459 - INFO - trying to connect to B on port 6001
+2023-03-26 17:25:58,462 - INFO - trying to connect to H on port 6006
+2023-03-26 17:26:00,752 - INFO - Connected by ('127.0.0.1', 54219)
+2023-03-26 17:26:00,752 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:26:04,332 - INFO - Connected by ('127.0.0.1', 54229)
+2023-03-26 17:26:04,332 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:26:08,468 - INFO - trying to connect to B on port 6001
+2023-03-26 17:26:08,468 - INFO - trying to connect to H on port 6006
+2023-03-26 17:26:10,761 - INFO - Connected by ('127.0.0.1', 54251)
+2023-03-26 17:26:10,761 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:26:14,339 - INFO - Connected by ('127.0.0.1', 54261)
+2023-03-26 17:26:14,344 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:26:18,472 - INFO - trying to connect to B on port 6001
+2023-03-26 17:26:18,472 - INFO - trying to connect to H on port 6006
+2023-03-26 17:26:20,766 - INFO - Connected by ('127.0.0.1', 54281)
+2023-03-26 17:26:20,769 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:26:24,363 - INFO - Connected by ('127.0.0.1', 54291)
+2023-03-26 17:26:24,363 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:26:28,476 - INFO - trying to connect to B on port 6001
+2023-03-26 17:26:28,479 - INFO - trying to connect to H on port 6006
+2023-03-26 17:26:30,771 - INFO - Connected by ('127.0.0.1', 54314)
+2023-03-26 17:26:30,771 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:26:34,380 - INFO - Connected by ('127.0.0.1', 54325)
+2023-03-26 17:26:34,380 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:26:38,483 - INFO - trying to connect to B on port 6001
+2023-03-26 17:26:38,487 - INFO - trying to connect to H on port 6006
+2023-03-26 17:26:40,782 - INFO - Connected by ('127.0.0.1', 54346)
+2023-03-26 17:26:40,782 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:26:44,397 - INFO - Connected by ('127.0.0.1', 54357)
+2023-03-26 17:26:44,397 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:26:48,489 - INFO - trying to connect to B on port 6001
+2023-03-26 17:26:48,493 - INFO - trying to connect to H on port 6006
+2023-03-26 17:26:50,785 - INFO - Connected by ('127.0.0.1', 54381)
+2023-03-26 17:26:50,785 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:26:54,422 - INFO - Connected by ('127.0.0.1', 54391)
+2023-03-26 17:26:54,422 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:26:58,500 - INFO - trying to connect to B on port 6001
+2023-03-26 17:26:58,504 - INFO - trying to connect to H on port 6006
+2023-03-26 17:27:00,790 - INFO - Connected by ('127.0.0.1', 54413)
+2023-03-26 17:27:00,790 - DEBUG - Received data: {"cost_from_origin": "1.4", "origin": "B", "routing_table": {"B": {"dir": "local", "cost": 0}, "C": {"dir": "C", "cost": 1.4}, "E": {"dir": "E", "cost": 3.1}, "F": {"dir": "F", "cost": 2.4}, "A": {"dir": "A", "cost": 3.1}, "H": {"dir": "F", "cost": 4.0}, "J": {"dir": "A", "cost": 5.5}, "G": {"dir": "H", "cost": 6.4}, "D": {"dir": "F", "cost": 4.4}, "I": {"dir": "D", "cost": 5.199999999999999}}}
+2023-03-26 17:27:04,441 - INFO - Connected by ('127.0.0.1', 54424)
+2023-03-26 17:27:04,441 - DEBUG - Received data: {"cost_from_origin": "5.2", "origin": "H", "routing_table": {"H": {"dir": "local", "cost": 0}, "G": {"dir": "G", "cost": 2.4}, "D": {"dir": "D", "cost": 0.8}, "F": {"dir": "D", "cost": 2.8}, "I": {"dir": "D", "cost": 1.6}, "B": {"dir": "F", "cost": 5.2}, "C": {"dir": "B", "cost": 6.6}, "E": {"dir": "B", "cost": 8.3}, "A": {"dir": "G", "cost": 5.6}, "J": {"dir": "I", "cost": 3.2}}}
+2023-03-26 17:27:07,325 - INFO - Received signal 2, quitting gracefully...
+2023-03-26 17:27:09,444 - INFO - Listen thread has finished

@@ -6,6 +6,27 @@ import time
 import json
 import logging
 import queue
+from .edge import edge
+
+
+"""
+    CURRENT IDEA:
+
+    Each process should create its own internal graph structure using nodes and edges
+    (or potentially just edges)
+
+    It will then share its initial graph structure through json to all neighbours, which
+    will construct their own graph until all graph structures converge. (As long as each node
+    is within a distance of 5 from eachother, it should be fine)
+
+    Then once the graph structure is created, then run bellman-ford and print the results.
+
+    Edges are probably the best way to do this, as when an edge is updated from any node, that new update
+    will be the one taken by all other nodes.
+
+    If there are 2 edges found to be between the same two verticies, the edge with lesser cost will be used
+    and the other will be disregarded. UNLESS the edge with a higher cost also has a higher seqence number.
+"""
 
 stop_event = threading.Event()
 
@@ -28,7 +49,7 @@ def start() -> None:
 ############## SETTING LOGGER ####################
 
     # Set so logs go to a file
-    file_handler = logging.FileHandler(node_id + ".log", mode='w')
+    file_handler = logging.FileHandler("./logs/" + node_id + ".log", mode='w')
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logger = logging.getLogger()
@@ -38,24 +59,19 @@ def start() -> None:
         if isinstance(handler, logging.StreamHandler):
             logger.removeHandler(handler)
 
-#################################################
-
 ############# GETTING INITIAL INFO ##############
 
     create_IUP()
     initial_information = check_config(node_config_file)
-    neighbours = initial_information.copy()
     if len(initial_information) == 0:
         return
-    # for node in initial_information:
-    #     update_IUP(node_id, node, initial_information[node].get("weight"))
 
-#################################################
+################# START THREADS ##################
 
     listen_thread = threading.Thread(target=listen, args=(port_no,))
     listen_thread.start()
 
-    broadcast_thread = threading.Thread(target=broadcast, args=(neighbours,))
+    broadcast_thread = threading.Thread(target=broadcast, args=(node_config_file,))
     broadcast_thread.start()
 
     process_inbound_thread = threading.Thread(target=watch_queue, args=())
@@ -63,6 +79,8 @@ def start() -> None:
 
     while True:
         time.sleep(10)
+        print_paths()
+        # stop_event.wait()
 
 
 def check_config(filename: str) -> dict:
@@ -121,25 +139,46 @@ def create_IUP() -> None:
         with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
            f.write(json.dumps(IUP_format))
 
-def update_IUP(updated_node_id : str, direction : str, cost : float) -> None:
+def update_IUP(destination_node_id : str, direction : str, cost : float) -> None:
 
     #  Updates the routing table in the information update packet if
-    #  There is no record of the updated node id
+    #  There is no record of the destination node id
     #  OR
-    #  The new cost of the updated node id is less then the previous cost of
-    #  getting to the updated node id
+    #  The new cost of the destination node id is less then the previous cost of
+    #  getting to the destination node id
 
 
     current_IUP = read_IUP()
     with information_update_packet_lock:
         routing_table : dict = current_IUP.get("routing_table")
-        if updated_node_id not in routing_table:
-            routing_table[updated_node_id] = {"dir" : direction, "cost" : cost}
+        if destination_node_id not in routing_table:
+            routing_table[destination_node_id] = {"dir" : direction, "cost" : cost}
         else:
-            if routing_table[updated_node_id]["cost"] > cost:
-                routing_table[updated_node_id] = {"dir" : direction, "cost" : cost}
+            if routing_table[destination_node_id]["cost"] > cost:
+                routing_table[destination_node_id] = {"dir" : direction, "cost" : cost}
+            elif routing_table[destination_node_id]["dir"] == direction and routing_table[destination_node_id]["cost"] != cost:
+                # Recieving an update from destination node, that the path of the route currently taken has changed
+                # Must update this path cost as the cost is now different, on the iteration after this current, the most efficient
+                # path will be calculated again.
+                routing_table[destination_node_id] = {"dir" : direction, "cost" : cost}
         with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
             f.write(json.dumps(current_IUP))
+
+# def update_IUP(destination_node_id : str, path , cost : float) -> None:
+#     current_IUP = read_IUP()
+#     with information_update_packet_lock:
+#         routing_table : dict = current_IUP.get("routing_table")
+#         if destination_node_id not in routing_table:
+#             routing_table[destination_node_id] = {"path" : path, "cost" : cost}
+#         else:
+#             if routing_table[destination_node_id]["cost"] > cost:
+#                 routing_table[destination_node_id] = {"path" : path, "cost" : cost}
+#             elif routing_table[destination_node_id]["path"] == path and routing_table[destination_node_id]["cost"] != cost:
+#                 routing_table[destination_node_id] = {"path" : path, "cost" : cost}
+#         with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
+#             f.write(json.dumps(current_IUP))
+
+
 
 def read_IUP() -> dict :
     # Reads the current information update packet stored for this node.
@@ -186,13 +225,14 @@ def listen(port: int) -> None:
 
     logging.info("Listen thread has finished")
 
-def broadcast(neighbours: dict) -> None:
+def broadcast(node_config_file: str) -> None:
 
     # Broadcasts the current IUP to each direct neighbour node, with each
     # neighbour recieving a custom value for the "cost_from_origin" key.
 
     while not stop_event.is_set():
         current_IUP = read_IUP()
+        neighbours = check_config(node_config_file)
         for neighbour in neighbours:
             current_IUP["cost_from_origin"] = neighbours.get(neighbour).get("weight")
             packet = json.dumps(current_IUP).encode("utf-8")
@@ -202,6 +242,9 @@ def broadcast(neighbours: dict) -> None:
                     logging.info("trying to connect to " + neighbour + " on port " + str(port))
                     s.connect(('localhost', port))
                     s.sendall(packet)
+            except ConnectionRefusedError:
+                logging.error(f"Connection was refused by node {neighbour}")
+                update_IUP(neighbour, neighbour, sys.maxsize)
             except Exception as e:
                 logging.error(f"Exception in broadcast: {e}")
         time.sleep(10)
@@ -238,6 +281,43 @@ def watch_queue() -> None:
                             update_IUP(node, direction, cost_from_sender + cost)
         except queue.Empty:
             continue
+
+
+
+def print_paths() -> None:
+    # Reads in the IUP
+    # Traces back the path taken for each node, and prints out the result for each node
+
+    current_IUP :dict = read_IUP()
+
+    for node in current_IUP.get("routing_table"):
+        if (node == node_id):
+            print("I am Node " + node)
+            continue
+        cost = round(current_IUP.get("routing_table").get(node).get("cost"), 1)
+        if cost >= sys.maxsize:
+            continue
+        path = traceback_path(node)
+        print(f"Least cost path from {node_id} to {node}: {path}, link cost: {cost}")
+
+def traceback_path(node : str, path : str = '') -> str:
+    current_IUP :dict = read_IUP()
+    routing_table : dict = current_IUP.get("routing_table")
+    direction : str = routing_table.get(node).get("dir")
+    if direction == node:
+        # This node is a neighbour
+        path += node
+        path += node_id
+        path = reverse_string(path)
+        return path
+    else:
+        path += node
+        # print(f"currently getting traceback for node {node}, the direction of this node is {direction}, current path is {path}")
+        return traceback_path(direction, path)
+        
+def reverse_string(string : str) -> str:
+    string = string[::-1]
+    return string
 
 def quit_gracefully(signum, frame) -> None:
     logging.info(f"Received signal {signum}, quitting gracefully...")

@@ -1,1 +1,1 @@
-{"cost_from_origin": 0, "origin": "A", "routing_table": {"A": {"dir": "local", "cost": 0}, "B": {"dir": "B", "cost": 3.1}, "H": {"dir": "H", "cost": 3.2}, "J": {"dir": "J", "cost": 2.4}, "C": {"dir": "B", "cost": 4.5}, "E": {"dir": "B", "cost": 6.2}, "F": {"dir": "B", "cost": 5.5}, "G": {"dir": "H", "cost": 5.6}, "D": {"dir": "H", "cost": 4.0}, "I": {"dir": "J", "cost": 4.0}}}
+[{"cost": "3.1", "nodes": ["A", "B"]}, {"cost": "3.2", "nodes": ["A", "H"]}, {"cost": "2.4", "nodes": ["A", "J"]}]

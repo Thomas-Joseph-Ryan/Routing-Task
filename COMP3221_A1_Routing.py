@@ -6,7 +6,7 @@ import time
 import json
 import logging
 import queue
-from .edge import edge
+from edge import edge
 
 
 """
@@ -33,6 +33,8 @@ stop_event = threading.Event()
 information_update_packet_lock = threading.Lock()
 
 inbound_information = queue.Queue()
+
+edges : list[edge] = []
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -61,12 +63,15 @@ def start() -> None:
 
 ############# GETTING INITIAL INFO ##############
 
-    create_IUP()
-    initial_information = check_config(node_config_file)
-    if len(initial_information) == 0:
+# Need to create internal graph
+    neighbour_information = check_config(node_config_file)
+    if len(neighbour_information) == 0:
         return
+    for neighbour in neighbour_information:
+        create_edge(neighbour, neighbour_information[neighbour]["weight"])
+    create_IUP()
 
-################# START THREADS ##################
+# ################# START THREADS ##################
 
     listen_thread = threading.Thread(target=listen, args=(port_no,))
     listen_thread.start()
@@ -79,21 +84,23 @@ def start() -> None:
 
     while True:
         time.sleep(10)
-        print_paths()
+        # print_paths()
         # stop_event.wait()
 
 
 def check_config(filename: str) -> dict:
 
-    # This method checks the config file
+    """
+        This method checks the config file
 
-    # It ensures the number of nodes in the config file matches the number in the first line.
+        # It ensures the number of nodes in the config file matches the number in the first line.
 
-    # It also ensures that each node has 3 values node_id - weight - and the port number
+        # It also ensures that each node has 3 values node_id - weight - and the port number
 
-    # it returns a dictionary of the format ie: The config file has one node B with weight
-    # 3.2 and port number 6001
-    # {"B" : {"weight" : 3.2, "port" : 6001}}
+        # it returns a dictionary of the format ie: The config file has one node B with weight
+        # 3.2 and port number 6001
+        # {"B" : {"weight" : 3.2, "port" : 6001}}
+    """
 
     neighbours = {}
     with open(filename, 'r') as file:
@@ -119,25 +126,36 @@ def check_config(filename: str) -> dict:
 
     return neighbours
  
+def create_edge(node, cost):
+    new_edge = edge((node_id, node), cost)
+    edges.append(new_edge)
+
 def create_IUP() -> None:
-    #This method creates the first information update package for each node
 
-    # The information update looks like the dictionary below and is designed
-    # so that the broadcast method can update the cost from origin for each
-    # neighbour that it is sending this package too.
+    """
+    This method creates the first information update package for each node
 
-    # The cost_from_origin represents the weight associated with this node
-    # and the node this node is sending this package too.
+     The information update looks like the dictionary below and is designed
+     so that the broadcast method can update the cost from origin for each
+     neighbour that it is sending this package too.
 
-    # The origin is the node_id of the sending node
+     The cost_from_origin represents the weight associated with this node
+     and the node this node is sending this package too.
 
-    # The node_id: {} represents each row in the routing table for the RIP 
-    # protocol
+     The origin is the node_id of the sending node
+
+     The node_id: {} represents each row in the routing table for the RIP 
+     protocol
     
-    IUP_format = {"cost_from_origin": 0, "origin": node_id, "routing_table" : {node_id : {"dir": "local", "cost": 0}}}
+    """
+    
+    iup = []
+    for edge in edges:
+        temp = edge.to_dict()
+        iup.append(temp)
     with information_update_packet_lock:
         with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
-           f.write(json.dumps(IUP_format))
+           f.write(json.dumps(iup))
 
 def update_IUP(destination_node_id : str, direction : str, cost : float) -> None:
 
@@ -234,7 +252,6 @@ def broadcast(node_config_file: str) -> None:
         current_IUP = read_IUP()
         neighbours = check_config(node_config_file)
         for neighbour in neighbours:
-            current_IUP["cost_from_origin"] = neighbours.get(neighbour).get("weight")
             packet = json.dumps(current_IUP).encode("utf-8")
             port = int(neighbours.get(neighbour).get("port"))
             try:
@@ -244,7 +261,7 @@ def broadcast(node_config_file: str) -> None:
                     s.sendall(packet)
             except ConnectionRefusedError:
                 logging.error(f"Connection was refused by node {neighbour}")
-                update_IUP(neighbour, neighbour, sys.maxsize)
+                # update_IUP(neighbour, neighbour, sys.maxsize)
             except Exception as e:
                 logging.error(f"Exception in broadcast: {e}")
         time.sleep(10)
@@ -253,32 +270,35 @@ def watch_queue() -> None:
     while not stop_event.is_set():
         try:
             # Inbound dict comes as the other nodes IUP as a string
-            inbound_dict = inbound_information.get(block=True, timeout=5)
+            inbound_info = inbound_information.get(block=True, timeout=5)
             # Load that string as a json
-            inbound_dict : dict = json.loads(inbound_dict)
+            inbound_info : list = json.loads(inbound_info)
+
+            for edge in inbound_info:
+                print(edge)
             # The first node in the inbound dict will be the node id of the process
             # that sent this data due to the way the IUP is initialised and added to.
-            sender_id = inbound_dict.get("origin")
-            cost_from_sender = float(inbound_dict.get("cost_from_origin"))
-            for node in inbound_dict.get("routing_table"):
-                        node_dict : dict = inbound_dict.get("routing_table").get(node)
-                        direction = node_dict.get("dir")
-                        cost = float(node_dict.get("cost"))
+            # sender_id = inbound_info.get("origin")
+            # cost_from_sender = float(inbound_info.get("cost_from_origin"))
+            # for node in inbound_info.get("routing_table"):
+            #             node_dict : dict = inbound_info.get("routing_table").get(node)
+            #             direction = node_dict.get("dir")
+            #             cost = float(node_dict.get("cost"))
 
-                        if (direction == "local"):
-                            # This node is a neighbour node, so its direction is itself and its cost is equal
-                            # to the cost from the sender
-                            update_IUP(node, sender_id, cost_from_sender)
-                        elif (direction == node):
-                            # This node is a direct neighbour to the sending node. So its direction is in the 
-                            # direction of this neighbouring node and its cost is equal to the cost of going to
-                            # this neighbour, then from this neighbour to it.
-                            update_IUP(node, sender_id, cost_from_sender + cost)
-                        else:
-                            # This node is connected to the sending node indirectly (not a neighbour). 
-                            # So do not change its direction as the sending node has already done this if 
-                            # necessary
-                            update_IUP(node, direction, cost_from_sender + cost)
+            #             if (direction == "local"):
+            #                 # This node is a neighbour node, so its direction is itself and its cost is equal
+            #                 # to the cost from the sender
+            #                 update_IUP(node, sender_id, cost_from_sender)
+            #             elif (direction == node):
+            #                 # This node is a direct neighbour to the sending node. So its direction is in the 
+            #                 # direction of this neighbouring node and its cost is equal to the cost of going to
+            #                 # this neighbour, then from this neighbour to it.
+            #                 update_IUP(node, sender_id, cost_from_sender + cost)
+            #             else:
+            #                 # This node is connected to the sending node indirectly (not a neighbour). 
+            #                 # So do not change its direction as the sending node has already done this if 
+            #                 # necessary
+            #                 update_IUP(node, direction, cost_from_sender + cost)
         except queue.Empty:
             continue
 

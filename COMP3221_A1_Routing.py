@@ -274,8 +274,18 @@ def watch_queue() -> None:
             # Load that string as a json
             inbound_info : list = json.loads(inbound_info)
 
-            for edge in inbound_info:
-                print(edge)
+            for incoming_edge in inbound_info:
+                incoming_edge_nodes = incoming_edge.get('nodes')
+                incoming_edge_cost = incoming_edge.get('cost')
+                incoming_edge = edge((incoming_edge_nodes[0], incoming_edge_nodes[1]), incoming_edge_cost)
+                already_exists = False
+                for existing_edge in edges:
+                    if existing_edge.same_edge(incoming_edge):
+                        priority_edge = edge.edge_priority(existing_edge, incoming_edge)
+                        if priority_edge == existing_edge:
+                            continue
+                        
+                
             # The first node in the inbound dict will be the node id of the process
             # that sent this data due to the way the IUP is initialised and added to.
             # sender_id = inbound_info.get("origin")

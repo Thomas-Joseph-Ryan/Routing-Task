@@ -7,26 +7,12 @@ import json
 import logging
 import queue
 from edge import edge
+from graph import graph
 
-
-"""
-    CURRENT IDEA:
-
-    Each process should create its own internal graph structure using nodes and edges
-    (or potentially just edges)
-
-    It will then share its initial graph structure through json to all neighbours, which
-    will construct their own graph until all graph structures converge. (As long as each node
-    is within a distance of 5 from eachother, it should be fine)
-
-    Then once the graph structure is created, then run bellman-ford and print the results.
-
-    Edges are probably the best way to do this, as when an edge is updated from any node, that new update
-    will be the one taken by all other nodes.
-
-    If there are 2 edges found to be between the same two verticies, the edge with lesser cost will be used
-    and the other will be disregarded. UNLESS the edge with a higher cost also has a higher seqence number.
-"""
+# I created the following program with the help of Chat-GPT for some functions and ideas.
+# The bulk of the programming and ideas came from myself, however if any plagerism is detected,
+# it is likely that it could be from GPT, however I imagine this would be highly unlikely as
+# I changed everything that it gave me and only kept some basic ideas.
 
 stop_event = threading.Event()
 
@@ -36,7 +22,11 @@ inbound_information = queue.Queue()
 
 edges : list[edge] = []
 
+edges_lock = threading.Lock()
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
+
+update_neighbours = False
 
 def start() -> None:
     global node_id
@@ -68,7 +58,7 @@ def start() -> None:
     if len(neighbour_information) == 0:
         return
     for neighbour in neighbour_information:
-        create_edge(neighbour, neighbour_information[neighbour]["weight"])
+        create_edge(neighbour, float(neighbour_information[neighbour]["weight"]))
     create_IUP()
 
 # ################# START THREADS ##################
@@ -82,10 +72,12 @@ def start() -> None:
     process_inbound_thread = threading.Thread(target=watch_queue, args=())
     process_inbound_thread.start()
 
+    time.sleep(60)
+    previous_info = None
     while True:
+        distances, previous = dijkstra(graph.construct_graph(edges), node_id)
+        previous_info = print_paths(distances, previous, previous_info)
         time.sleep(10)
-        # print_paths()
-        # stop_event.wait()
 
 
 def check_config(filename: str) -> dict:
@@ -130,24 +122,7 @@ def create_edge(node, cost):
     new_edge = edge((node_id, node), cost)
     edges.append(new_edge)
 
-def create_IUP() -> None:
-
-    """
-    This method creates the first information update package for each node
-
-     The information update looks like the dictionary below and is designed
-     so that the broadcast method can update the cost from origin for each
-     neighbour that it is sending this package too.
-
-     The cost_from_origin represents the weight associated with this node
-     and the node this node is sending this package too.
-
-     The origin is the node_id of the sending node
-
-     The node_id: {} represents each row in the routing table for the RIP 
-     protocol
-    
-    """
+def create_IUP() -> str:
     
     iup = []
     for edge in edges:
@@ -156,47 +131,7 @@ def create_IUP() -> None:
     with information_update_packet_lock:
         with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
            f.write(json.dumps(iup))
-
-def update_IUP(destination_node_id : str, direction : str, cost : float) -> None:
-
-    #  Updates the routing table in the information update packet if
-    #  There is no record of the destination node id
-    #  OR
-    #  The new cost of the destination node id is less then the previous cost of
-    #  getting to the destination node id
-
-
-    current_IUP = read_IUP()
-    with information_update_packet_lock:
-        routing_table : dict = current_IUP.get("routing_table")
-        if destination_node_id not in routing_table:
-            routing_table[destination_node_id] = {"dir" : direction, "cost" : cost}
-        else:
-            if routing_table[destination_node_id]["cost"] > cost:
-                routing_table[destination_node_id] = {"dir" : direction, "cost" : cost}
-            elif routing_table[destination_node_id]["dir"] == direction and routing_table[destination_node_id]["cost"] != cost:
-                # Recieving an update from destination node, that the path of the route currently taken has changed
-                # Must update this path cost as the cost is now different, on the iteration after this current, the most efficient
-                # path will be calculated again.
-                routing_table[destination_node_id] = {"dir" : direction, "cost" : cost}
-        with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
-            f.write(json.dumps(current_IUP))
-
-# def update_IUP(destination_node_id : str, path , cost : float) -> None:
-#     current_IUP = read_IUP()
-#     with information_update_packet_lock:
-#         routing_table : dict = current_IUP.get("routing_table")
-#         if destination_node_id not in routing_table:
-#             routing_table[destination_node_id] = {"path" : path, "cost" : cost}
-#         else:
-#             if routing_table[destination_node_id]["cost"] > cost:
-#                 routing_table[destination_node_id] = {"path" : path, "cost" : cost}
-#             elif routing_table[destination_node_id]["path"] == path and routing_table[destination_node_id]["cost"] != cost:
-#                 routing_table[destination_node_id] = {"path" : path, "cost" : cost}
-#         with open("./IUPs/" + node_id + "-IUP.json", "w") as f:
-#             f.write(json.dumps(current_IUP))
-
-
+    return json.dumps(iup)
 
 def read_IUP() -> dict :
     # Reads the current information update packet stored for this node.
@@ -243,25 +178,27 @@ def listen(port: int) -> None:
 
     logging.info("Listen thread has finished")
 
-def broadcast(node_config_file: str) -> None:
+def broadcast(config_file_path) -> None:
 
     # Broadcasts the current IUP to each direct neighbour node, with each
     # neighbour recieving a custom value for the "cost_from_origin" key.
 
     while not stop_event.is_set():
-        current_IUP = read_IUP()
-        neighbours = check_config(node_config_file)
-        for neighbour in neighbours:
-            packet = json.dumps(current_IUP).encode("utf-8")
-            port = int(neighbours.get(neighbour).get("port"))
+        current_IUP = create_IUP()
+        neighbour_information = check_config(config_file_path)
+        for neighbour in neighbour_information:
+            packet = current_IUP.encode("utf-8")
+            port = int(neighbour_information.get(neighbour).get("port"))
+            cost = float(neighbour_information.get(neighbour).get("weight"))
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     logging.info("trying to connect to " + neighbour + " on port " + str(port))
                     s.connect(('localhost', port))
+                    update_node(neighbour, cost)
                     s.sendall(packet)
             except ConnectionRefusedError:
                 logging.error(f"Connection was refused by node {neighbour}")
-                # update_IUP(neighbour, neighbour, sys.maxsize)
+                update_node(neighbour, float('inf'))
             except Exception as e:
                 logging.error(f"Exception in broadcast: {e}")
         time.sleep(10)
@@ -271,83 +208,116 @@ def watch_queue() -> None:
         try:
             # Inbound dict comes as the other nodes IUP as a string
             inbound_info = inbound_information.get(block=True, timeout=5)
+
+            # if inbound_info == "update":
+            #     update_neighbours = True
+            #     continue
+
             # Load that string as a json
             inbound_info : list = json.loads(inbound_info)
 
+            
+
             for incoming_edge in inbound_info:
                 incoming_edge_nodes = incoming_edge.get('nodes')
-                incoming_edge_cost = incoming_edge.get('cost')
-                incoming_edge = edge((incoming_edge_nodes[0], incoming_edge_nodes[1]), incoming_edge_cost)
-                already_exists = False
-                for existing_edge in edges:
-                    if existing_edge.same_edge(incoming_edge):
-                        priority_edge = edge.edge_priority(existing_edge, incoming_edge)
-                        if priority_edge == existing_edge:
-                            continue
-                        
-                
-            # The first node in the inbound dict will be the node id of the process
-            # that sent this data due to the way the IUP is initialised and added to.
-            # sender_id = inbound_info.get("origin")
-            # cost_from_sender = float(inbound_info.get("cost_from_origin"))
-            # for node in inbound_info.get("routing_table"):
-            #             node_dict : dict = inbound_info.get("routing_table").get(node)
-            #             direction = node_dict.get("dir")
-            #             cost = float(node_dict.get("cost"))
+                incoming_edge_cost = float(incoming_edge.get('cost'))
+                incoming_edge_seq_num = int(incoming_edge.get('sequence_number'))
+                incoming_edge = edge((incoming_edge_nodes[0], incoming_edge_nodes[1]), incoming_edge_cost, incoming_edge_seq_num)
+                add_incoming_edge = True
+                with edges_lock:
+                    for existing_edge in edges:
+                        if existing_edge.same_edge(incoming_edge):
+                            # Looking at edge that already exists in this nodes understanding of edges
+                            priority_edge = edge.edge_priority(existing_edge, incoming_edge)
+                            if priority_edge == existing_edge:
+                                # If the priority edge is already the one that exists we do not need to change anything
+                                add_incoming_edge = False
+                                continue
+                            else:
+                                edges.remove(existing_edge)
+                    if add_incoming_edge == True:
+                        edges.append(incoming_edge)
 
-            #             if (direction == "local"):
-            #                 # This node is a neighbour node, so its direction is itself and its cost is equal
-            #                 # to the cost from the sender
-            #                 update_IUP(node, sender_id, cost_from_sender)
-            #             elif (direction == node):
-            #                 # This node is a direct neighbour to the sending node. So its direction is in the 
-            #                 # direction of this neighbouring node and its cost is equal to the cost of going to
-            #                 # this neighbour, then from this neighbour to it.
-            #                 update_IUP(node, sender_id, cost_from_sender + cost)
-            #             else:
-            #                 # This node is connected to the sending node indirectly (not a neighbour). 
-            #                 # So do not change its direction as the sending node has already done this if 
-            #                 # necessary
-            #                 update_IUP(node, direction, cost_from_sender + cost)
         except queue.Empty:
             continue
 
+def dijkstra(graph, source):
+    # Initialization
+    unexplored = set(graph.keys())
+    distances = {node: float('inf') for node in graph}
+    distances[source] = 0
+    previous = {node: None for node in graph}
 
+    while unexplored:
+        # Select the unexplored node with the minimum distance
+        u = min(unexplored, key=distances.get)
+        unexplored.remove(u)
 
-def print_paths() -> None:
+        # Stop if the minimum distance is infinity (i.e., unreachable)
+        if distances[u] == float('inf'):
+            break
+
+        # Explore the neighbors of the current node
+        for v, w in graph[u]:
+            w = float(w)
+            # Calculate the tentative distance to the neighbor
+            tentative_distance = distances[u] + w
+
+            # Update the distance and previous node if the tentative distance is less than the current distance
+            if tentative_distance < distances[v]:
+                distances[v] = tentative_distance
+                previous[v] = u
+
+    return distances, previous
+
+def print_paths(distances, previous, previous_info=None) -> None:
     # Reads in the IUP
     # Traces back the path taken for each node, and prints out the result for each node
 
-    current_IUP :dict = read_IUP()
+    if previous_info is None:
+        previous_info = {}
 
-    for node in current_IUP.get("routing_table"):
-        if (node == node_id):
-            print("I am Node " + node)
-            continue
-        cost = round(current_IUP.get("routing_table").get(node).get("cost"), 1)
-        if cost >= sys.maxsize:
-            continue
-        path = traceback_path(node)
-        print(f"Least cost path from {node_id} to {node}: {path}, link cost: {cost}")
+    updated_info = {}
+    has_changed = False
 
-def traceback_path(node : str, path : str = '') -> str:
-    current_IUP :dict = read_IUP()
-    routing_table : dict = current_IUP.get("routing_table")
-    direction : str = routing_table.get(node).get("dir")
-    if direction == node:
-        # This node is a neighbour
-        path += node
-        path += node_id
-        path = reverse_string(path)
-        return path
+
+     # Sort the nodes in alphabetical order, excluding the starting node
+    sorted_nodes = sorted([node for node in distances.keys() if node != node_id])
+
+    for node in sorted_nodes:
+        cost = round(distances[node], 1)
+        path = get_path(previous, node)
+
+        if (path, cost) != previous_info.get(node):
+            has_changed = True
+        updated_info[node] = (path, cost)
+    
+    if has_changed:
+        print(f"I am Node {node_id}")
+        for node, (path, cost) in updated_info.items():
+            if cost >= float('inf'):
+                continue
+            print(f"Least cost path from {node_id} to {node}: {path}, link cost: {cost}")
+
+    return updated_info
+
+def get_path(previous : dict, target : str):
+    path = []
+    current = target
+    while current is not None:
+        path.append(current)
+        current = previous[current]
+    if path[-1] is not None:
+        return "".join(reversed(path))
     else:
-        path += node
-        # print(f"currently getting traceback for node {node}, the direction of this node is {direction}, current path is {path}")
-        return traceback_path(direction, path)
+        return None
         
-def reverse_string(string : str) -> str:
-    string = string[::-1]
-    return string
+def update_node(node : str, cost : float):
+    with edges_lock:
+        for edge in edges:
+            if edge.node_involved(node) and edge.node_involved(node_id):
+                edge.change_cost(cost)
+                edge.inc_sequence_number()
 
 def quit_gracefully(signum, frame) -> None:
     logging.info(f"Received signal {signum}, quitting gracefully...")

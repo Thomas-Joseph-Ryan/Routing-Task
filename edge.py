@@ -4,10 +4,10 @@ class edge:
         node_ids: a tuple of the 2 nodes this edge connects
         cost: the cost of going along this edge
     """
-    def __init__(self, nodes : tuple[str, str], cost : float) -> None:
+    def __init__(self, nodes : tuple[str, str], cost : float, sequence_numer : int = 1) -> None:
         self.nodes = nodes
         self.cost = cost
-        self.sequence_number = 1
+        self.sequence_number = sequence_numer
 
     def change_cost(self, cost : float):
         self.cost = cost
@@ -47,4 +47,9 @@ class edge:
         ret = {}
         ret["cost"] = self.cost
         ret["nodes"] = self.nodes
+        ret["sequence_number"] = self.sequence_number
         return ret
+    
+    def to_string(self):
+        str = f"From: {self.nodes[0]}, To: {self.nodes[1]},  Cost: {self.cost},  Seq Num: {self.sequence_number}"
+        return str
